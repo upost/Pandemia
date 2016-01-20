@@ -1,0 +1,25 @@
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+             xmlns:tools="http://schemas.android.com/tools"
+             android:layout_width="match_parent"
+             android:layout_height="match_parent"
+             android:background="#000000"
+             tools:context="de.ludetis.android.medicus2.MainActivity">
+
+    <de.ludetis.android.medicus2.view.VirusView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="visible"/>
+
+
+    <TextView
+        android:id="@+id/title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:keepScreenOn="true"
+        android:text="@string/title"
+        android:textColor="#e57070"
+        android:textSize="32sp"/>
+
+
+</FrameLayout>
