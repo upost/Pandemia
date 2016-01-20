@@ -2,9 +2,11 @@ PANDEMIA a.k.a. MEDICUS II
 
 Simple demo of a location based game MMO game for Android.
 
-Using MQTT protocol.
-
 Virus infection, location based.
+
+Using MQTT protocol and MapDB.
+
+WORK IN PROGRESS!
 
 Note: This game is not production ready, it's just a demo.
 
