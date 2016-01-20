@@ -9,12 +9,16 @@ import android.util.AttributeSet;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Random;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 import de.ludetis.android.medicus2.R;
 import de.ludetis.android.medicus2.VirusDatabase;
+import de.ludetis.android.medicus2.model.Movement;
 import de.ludetis.android.medicus2.model.Virus;
 
 /**
@@ -29,6 +33,8 @@ public class VirusView extends SurfaceView implements SurfaceHolder.Callback {
     private Rect bgRect;
     private Paint paintBitmap,paintVirus1,paintVirus2;
     private Context context;
+    private Map<String,Movement> virusMovement = new HashMap<>();
+    private Random rnd = new Random();
 
     public VirusView(Context context) {
         super(context);
@@ -84,6 +90,7 @@ public class VirusView extends SurfaceView implements SurfaceHolder.Callback {
             Canvas canvas = null;
             try {
                 canvas = getHolder().lockCanvas();
+                movement(canvas.getWidth(), canvas.getHeight());
                 synchronized (getHolder()) {
                     doDraw(canvas);
                 }
@@ -93,12 +100,32 @@ public class VirusView extends SurfaceView implements SurfaceHolder.Callback {
         }
     };
 
+    private void movement(int width,int height) {
+        for(String id: virusDatabase.getViruses()) {
+            Movement m = virusMovement.get(id);
+            if(m==null) {
+                m=new Movement(rnd.nextInt(width), rnd.nextInt(height), rnd.nextFloat()*2-1, rnd.nextFloat()*2-1);
+                virusMovement.put(id,m);
+            }
+            moveVirus(width, height, id,m);
+        }
+    }
+
+    private void moveVirus(int width,int height, String id, Movement m) {
+        m.move(scale(0.05f));
+        if(m.x>width) m.vx= -m.vx;
+        if(m.y>width) m.vy= -m.vy;
+        if(m.x<0) m.vx= -m.vx;
+        if(m.y<0) m.vy= -m.vy;
+    }
+
     private void doDraw(Canvas canvas) {
 
         canvas.drawBitmap(bg.getBitmap(), bgRect, canvas.getClipBounds(), paintBitmap);
         int h=0;
         for(String id: virusDatabase.getViruses()) {
-            drawVirus(canvas, 50, h+50, virusDatabase.findVirus(id));
+            Movement m = virusMovement.get(id);
+            drawVirus(canvas, Math.round(m.x), Math.round(m.y), virusDatabase.findVirus(id));
             h+=120;
         }
     }
@@ -106,6 +133,10 @@ public class VirusView extends SurfaceView implements SurfaceHolder.Callback {
     private void drawVirus(Canvas canvas, int x, int y, Virus virus) {
         paintVirus1.setColor(virus.getColor1());
         paintVirus1.setStyle(Paint.Style.FILL_AND_STROKE);
-        canvas.drawCircle(x,y,50,paintVirus1);
+        canvas.drawCircle(x,y,scale(5),paintVirus1);
+    }
+
+    private float scale(float c) {
+        return context.getResources().getDisplayMetrics().xdpi * c / 25f;
     }
 }

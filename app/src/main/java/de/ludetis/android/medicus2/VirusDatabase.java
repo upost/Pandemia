@@ -17,12 +17,14 @@ import de.ludetis.android.medicus2.model.Virus;
  */
 public class VirusDatabase {
 
-    private final BTreeMap<String, Virus> map;
-    private DB db;
+    private static BTreeMap<String, Virus> map;
+    private static DB db;
 
     public VirusDatabase(Context context) {
-        this.db = DBMaker.newFileDB(new File(context.getDir("db",0),"virus.db")).make();
-        map = db.getTreeMap("v");
+        if(db==null)
+            db = DBMaker.newFileDB(new File(context.getDir("db",0),"virus.db")).make();
+        if(map==null)
+            map = db.getTreeMap("v");
     }
 
     public void  close() {

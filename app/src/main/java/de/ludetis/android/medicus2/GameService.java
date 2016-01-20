@@ -162,17 +162,17 @@ public class GameService extends Service implements LocationListener, IMqttActio
 
     @Override
     public void onStatusChanged(String s, int i, Bundle bundle) {
-        Log.d(LOG_TAG, "location status: " + s);
+        Log.v(LOG_TAG, "location status: " + s);
     }
 
     @Override
     public void onProviderEnabled(String s) {
-        Log.d(LOG_TAG, "location provider enabled: " + s);
+        Log.v(LOG_TAG, "location provider enabled: " + s);
     }
 
     @Override
     public void onProviderDisabled(String s) {
-        Log.d(LOG_TAG, "location provider disabled: " + s);
+        Log.v(LOG_TAG, "location provider disabled: " + s);
     }
 
     public static String topic(Location l) {
@@ -181,12 +181,12 @@ public class GameService extends Service implements LocationListener, IMqttActio
 
     @Override
     public void onSuccess(IMqttToken asyncActionToken) {
-        Log.d(LOG_TAG, "mqtt success");
+        Log.v(LOG_TAG, "mqtt success");
     }
 
     @Override
     public void onFailure(IMqttToken asyncActionToken, Throwable exception) {
-        Log.d(LOG_TAG, "mqtt failure: ", exception);
+        Log.w(LOG_TAG, "mqtt failure: ", exception);
     }
 
     // MqttCallback
@@ -199,13 +199,13 @@ public class GameService extends Service implements LocationListener, IMqttActio
     public void messageArrived(String topic, MqttMessage message) throws Exception {
         if(topic.equals(currentTopic)) {
             String msg = new String( message.getPayload() );
-            Log.d(LOG_TAG, "mqtt message arrived: " + msg);
+            Log.v(LOG_TAG, "mqtt message arrived: " + msg);
             //TODO process message
             JSONArray a = new JSONArray(msg);
             for(int i=0; i<a.length(); i++) {
                 Virus v = VirusFactory.fromJSON(a.getJSONObject(i));
                 if(v!=null && virusDatabase.findVirus(v.getId())==null) {
-                    Log.d(LOG_TAG, "infected with virus: " + v);
+                    Log.d(LOG_TAG, "infected with virus: " + v.getId());
                     virusDatabase.addVirus(v);
                 }
             }
