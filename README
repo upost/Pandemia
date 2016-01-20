@@ -8,5 +8,7 @@ Virus infection, location based.
 
 Note: This game is not production ready, it's just a demo.
 
-
+Note: The MQTT broker configured in GameService.java may be offline at any time, so get your own.
+If you own a linux server somewhere on the internet, just install mosquitto (mosquitto.org) and you are done.
+Also see mqtt.org for details about the "internet protocol of things".
 
