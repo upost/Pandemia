@@ -81,7 +81,7 @@ public class VirusView extends SurfaceView implements SurfaceHolder.Callback {
     @Override
     public void surfaceDestroyed(SurfaceHolder surfaceHolder) {
         executorService.shutdown();
-        virusDatabase.close();
+        //virusDatabase.close();
     }
 
     private Runnable renderer = new Runnable() {

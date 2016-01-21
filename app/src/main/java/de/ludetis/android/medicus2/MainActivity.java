@@ -49,7 +49,7 @@ public class MainActivity extends BaseGameActivity {
 
     @Override
     protected void onDestroy() {
-        virusDatabase.close();
+        //virusDatabase.close();
         super.onDestroy();
     }
 }

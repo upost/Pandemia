@@ -14,10 +14,12 @@ import org.eclipse.paho.client.mqttv3.IMqttActionListener;
 import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
 import org.eclipse.paho.client.mqttv3.IMqttToken;
 import org.eclipse.paho.client.mqttv3.MqttCallback;
+import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 import org.json.JSONArray;
 
+import java.util.List;
 import java.util.NavigableSet;
 import java.util.UUID;
 import java.util.concurrent.Executors;
@@ -30,7 +32,9 @@ public class GameService extends Service implements LocationListener, IMqttActio
     private static final String BROKER_URI = "tcp://h8.ludetis-spiele.de";
     private static final double GRID_SIZE_FACTOR = 10; // grid size = 1/GRID_SIZE_FACTOR °
     private static final String LOG_TAG = "GameService";
-    private static final long HEARTBEAT_INTERVAL_SECONDS = 10;
+    private static final long HEARTBEAT_INTERVAL_SECONDS = 30;
+    private static final long MIN_LOCATION_UPDATE_INTERVAL_MS = 1000 * 10;
+    private static final float MIN_LOCATION_UPDATE_DISTANCE_M = 100;
 
     private MqttAndroidClient mqttClient;
     private String clientId;
@@ -64,12 +68,16 @@ public class GameService extends Service implements LocationListener, IMqttActio
         // Location
         locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
         if(locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER))
-            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,0,0,this);
+            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,MIN_LOCATION_UPDATE_INTERVAL_MS,MIN_LOCATION_UPDATE_DISTANCE_M,this);
         else
-            locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER,0,0,this);
+            locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER,MIN_LOCATION_UPDATE_INTERVAL_MS,MIN_LOCATION_UPDATE_DISTANCE_M,this);
+
+        findBestLastLocation();
 
         try {
-            mqttClient.connect(null, this);
+            MqttConnectOptions options = new MqttConnectOptions();
+            options.setKeepAliveInterval(0); // no keepalive pings
+            mqttClient.connect(options, null, this);
             Log.d(LOG_TAG, "connected to MQTT broker as " + clientId);
         } catch (MqttException e) {
             Log.e(LOG_TAG, "could not connect to MQTT broker at " + BROKER_URI);
@@ -87,6 +95,36 @@ public class GameService extends Service implements LocationListener, IMqttActio
                 }
             }
         }, HEARTBEAT_INTERVAL_SECONDS, HEARTBEAT_INTERVAL_SECONDS, TimeUnit.SECONDS);
+    }
+
+    private void findBestLastLocation() {
+        long minTime=0;
+        float bestAccuracy = Float.MAX_VALUE;
+        Location bestResult=null;
+        long bestTime=0;
+        List<String> matchingProviders = locationManager.getAllProviders();
+        for (String provider: matchingProviders) {
+            Location location = locationManager.getLastKnownLocation(provider);
+            if (location != null) {
+                float accuracy = location.getAccuracy();
+                long time = location.getTime();
+
+                if ((time > minTime && accuracy < bestAccuracy)) {
+                    bestResult = location;
+                    bestAccuracy = accuracy;
+                    bestTime = time;
+                }
+                else if (time < minTime &&
+                        bestAccuracy == Float.MAX_VALUE && time > bestTime){
+                    bestResult = location;
+                    bestTime = time;
+                }
+            }
+        }
+        if(bestResult!=null) {
+            Log.d(LOG_TAG, "found best last location");
+            onLocationChanged(bestResult);
+        }
     }
 
     private void heartbeat() {
@@ -120,7 +158,7 @@ public class GameService extends Service implements LocationListener, IMqttActio
 
     @Override
     public void onDestroy() {
-        virusDatabase.close();
+        //virusDatabase.close();
 
         executorService.shutdown();
 
@@ -142,6 +180,7 @@ public class GameService extends Service implements LocationListener, IMqttActio
         if(!topic.equals(currentTopic)) {
             Log.d(LOG_TAG, "new grid location: " + topic);
             switchToTopic(topic);
+            currentTopic = topic;
         }
     }
 
@@ -151,13 +190,12 @@ public class GameService extends Service implements LocationListener, IMqttActio
                 if(currentTopic!=null)
                     mqttClient.unsubscribe(currentTopic);
                 mqttClient.subscribe(newTopic, 0);
-                currentTopic = newTopic;
+
                 Log.d(LOG_TAG, "subscribed to " + currentTopic);
             } catch (MqttException e) {
                 Log.w(LOG_TAG, "could not subscribe to: " + newTopic + ": ", e);
             }
         }
-
     }
 
     @Override
