@@ -21,11 +21,14 @@ import org.json.JSONArray;
 
 import java.util.List;
 import java.util.NavigableSet;
+import java.util.Random;
 import java.util.UUID;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
+import de.greenrobot.event.EventBus;
+import de.ludetis.android.medicus2.model.GameEvent;
 import de.ludetis.android.medicus2.model.Virus;
 
 public class GameService extends Service implements LocationListener, IMqttActionListener, MqttCallback {
@@ -35,13 +38,15 @@ public class GameService extends Service implements LocationListener, IMqttActio
     private static final long HEARTBEAT_INTERVAL_SECONDS = 30;
     private static final long MIN_LOCATION_UPDATE_INTERVAL_MS = 1000 * 10;
     private static final float MIN_LOCATION_UPDATE_DISTANCE_M = 100;
+    private static final int MAX_VIRUS=10;
 
     private MqttAndroidClient mqttClient;
     private String clientId;
     private LocationManager locationManager;
-    private String currentTopic;
+    private String currentTopic,lastSubscribedTopic;
     private ScheduledExecutorService executorService = Executors.newSingleThreadScheduledExecutor();
     private VirusDatabase virusDatabase;
+    private final Random rnd = new Random();
 
     public GameService() {
     }
@@ -95,6 +100,12 @@ public class GameService extends Service implements LocationListener, IMqttActio
                 }
             }
         }, HEARTBEAT_INTERVAL_SECONDS, HEARTBEAT_INTERVAL_SECONDS, TimeUnit.SECONDS);
+
+        EventBus.getDefault().register(this);
+    }
+
+    public void onEvent(GameEvent gameEvent) {
+
     }
 
     private void findBestLastLocation() {
@@ -123,24 +134,30 @@ public class GameService extends Service implements LocationListener, IMqttActio
         }
         if(bestResult!=null) {
             Log.d(LOG_TAG, "found best last location");
-            onLocationChanged(bestResult);
+            currentTopic = topic(bestResult);
         }
     }
 
     private void heartbeat() {
+        try {
 
-        mutation();
+            mutation();
 
-        if(currentTopic!=null) {
-            String payload = virusDatabase.findAllVirusDataAsJson();
-            try {
-                Log.d(LOG_TAG, "publishing to " + currentTopic + ": " + payload);
-                mqttClient.publish(currentTopic, new MqttMessage(payload.getBytes()));
-            } catch (MqttException e) {
-                // TODO
+            if (currentTopic != null) {
+
+                String payload = virusDatabase.findAllVirusDataAsJson();
+                try {
+                    Log.d(LOG_TAG, "publishing to " + currentTopic + ": " + payload);
+                    mqttClient.publish(currentTopic, new MqttMessage(payload.getBytes()));
+                } catch (MqttException e) {
+                    // TODO
+                }
+                subscribeToCurrentTopic();
+            } else {
+                Log.d(LOG_TAG, "waiting for location...");
             }
-        } else {
-            Log.d(LOG_TAG, "waiting for location...");
+        }catch (Exception e) {
+            Log.e(LOG_TAG, "Exception during heartbeat ",e);
         }
     }
 
@@ -150,10 +167,41 @@ public class GameService extends Service implements LocationListener, IMqttActio
             Virus v = VirusFactory.createMutation(null);
             Log.d(LOG_TAG, "new virus: " + v.getId());
             virusDatabase.addVirus(v);
+            EventBus.getDefault().post(new GameEvent(GameEvent.Type.NEW_VIRUS, v.getId(), 0));
         } else {
-            // TODO mutation
+            // mutation
+            for(String id : virusDatabase.getViruses()) {
+                Virus virus = virusDatabase.findVirus(id);
+                int mutationPropability = calcMutationPropability(virus);
+                if(rnd.nextInt(10000)<mutationPropability) {
+                    Virus v = VirusFactory.createMutation(virus);
+                    Log.d(LOG_TAG, "mutation of virus "+id+": new virus: " + v.getId());
+                    virusDatabase.addVirus(v);
+                    EventBus.getDefault().post(new GameEvent(GameEvent.Type.NEW_VIRUS,v.getId(),0));
+                }
+            }
+//            if(virusDatabase.getViruses().size()>MAX_VIRUS) {
+//                // look for virus with minimal stamina and kill it
+//                String minimalStaminaVirusId=null;
+//                for(String id : virusDatabase.getViruses()) {
+//                    Virus virus = virusDatabase.findVirus(id);
+//                    if(minimalStaminaVirusId==null ||
+//                            virus.getStamina()<virusDatabase.findVirus(minimalStaminaVirusId).getStamina()) {
+//                        minimalStaminaVirusId=id;
+//                    }
+//                }
+//                if(minimalStaminaVirusId!=null) {
+//                    virusDatabase.removeVirus(minimalStaminaVirusId);
+//                    Log.d(LOG_TAG, "killed virus with low stamina: " + minimalStaminaVirusId);
+//                    EventBus.getDefault().post(new GameEvent(GameEvent.Type.KILLED_VIRUS, minimalStaminaVirusId, 0));
+//                }
+//            }
         }
 
+    }
+
+    private int calcMutationPropability(Virus virus) {
+        return virus.getMutability();
     }
 
     @Override
@@ -179,21 +227,21 @@ public class GameService extends Service implements LocationListener, IMqttActio
         String topic = topic(location);
         if(!topic.equals(currentTopic)) {
             Log.d(LOG_TAG, "new grid location: " + topic);
-            switchToTopic(topic);
-            currentTopic = topic;
+            currentTopic=topic;
+            subscribeToCurrentTopic();
         }
     }
 
-    private void switchToTopic(String newTopic) {
-        if(mqttClient.isConnected()) {
+    private void subscribeToCurrentTopic() {
+        if(mqttClient.isConnected() && lastSubscribedTopic!=currentTopic) {
             try {
-                if(currentTopic!=null)
-                    mqttClient.unsubscribe(currentTopic);
-                mqttClient.subscribe(newTopic, 0);
-
+                if(lastSubscribedTopic!=null)
+                    mqttClient.unsubscribe(lastSubscribedTopic);
+                mqttClient.subscribe(currentTopic, 0);
+                lastSubscribedTopic = currentTopic;
                 Log.d(LOG_TAG, "subscribed to " + currentTopic);
             } catch (MqttException e) {
-                Log.w(LOG_TAG, "could not subscribe to: " + newTopic + ": ", e);
+                Log.w(LOG_TAG, "could not subscribe to: " + currentTopic + ": ", e);
             }
         }
     }

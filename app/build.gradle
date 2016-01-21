@@ -34,6 +34,8 @@ dependencies {
 
     compile 'org.mapdb:mapdb:1.0.8'
 
+    compile 'de.greenrobot:eventbus:2.4.0'
+
     compile ('org.eclipse.paho:org.eclipse.paho.android.service:1.0.2') {
         exclude module: 'support-v4'
     }

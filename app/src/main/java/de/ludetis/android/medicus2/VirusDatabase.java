@@ -22,9 +22,9 @@ public class VirusDatabase {
 
     public VirusDatabase(Context context) {
         if(db==null)
-            db = DBMaker.newFileDB(new File(context.getDir("db",0),"virus.db")).make();
+            db = DBMaker.newFileDB(new File(context.getDir("db",0),"virustest.db")).make();
         if(map==null)
-            map = db.getTreeMap("v");
+            map = db.getTreeMap("v2");
     }
 
     public void  close() {
@@ -53,5 +53,10 @@ public class VirusDatabase {
             res.put( v.asJSON() );
         }
         return res.toString();
+    }
+
+    public void removeVirus(String id) {
+        map.remove(id);
+        db.commit();
     }
 }

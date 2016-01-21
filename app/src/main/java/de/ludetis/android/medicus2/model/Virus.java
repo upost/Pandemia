@@ -11,9 +11,13 @@ import java.io.Serializable;
 public class Virus implements Serializable {
 
     private String id;
+    private String name;
     private int limbs;
     private int color1,color2;
     private int seed;
+    private int strength;
+    private int mutability;
+    private int stamina;
 
     public Virus(String id) {
         this.id = id;
@@ -27,10 +31,14 @@ public class Virus implements Serializable {
         JSONObject o = new JSONObject();
         try {
             o.put("id",id);
+            o.put("name",name);
             o.put("limbs",limbs);
             o.put("color1",color1);
             o.put("color2",color2);
             o.put("seed",seed);
+            o.put("strength",strength);
+            o.put("mutability",mutability);
+            o.put("stamina",stamina);
         } catch (JSONException e) {
             //
         }
@@ -53,10 +61,30 @@ public class Virus implements Serializable {
         return seed;
     }
 
-    public void init(int limbs, int color1, int color2, int seed) {
-        this.limbs=limbs;
+    public int getStrength() {
+        return strength;
+    }
+
+    public int getMutability() {
+        return mutability;
+    }
+
+    public int getStamina() {
+        return stamina;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void init(String name,int limbs, int color1, int color2, int seed, int strength, int mutability, int stamina) {
+        this.name=name;
+        this.limbs=limbs<3?3:limbs;
         this.color1=color1;
         this.color2=color2;
         this.seed=seed;
+        this.strength = strength;
+        this.mutability = mutability;
+        this.stamina = stamina;
     }
 }

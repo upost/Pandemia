@@ -1,4 +1,10 @@
 <resources>
     <string name="app_name">Pandemia</string>
     <string name="title">PANDEMIA</string>
+    <string name="strength">strength</string>
+    <string name="mutability">mutability</string>
+    <string name="stamina">stamina</string>
+    <string name="zombification">zombification</string>
+    <string name="total_zombification">total zombification</string>
 </resources>
+

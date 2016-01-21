@@ -6,9 +6,11 @@
              tools:context="de.ludetis.android.medicus2.MainActivity">
 
     <de.ludetis.android.medicus2.view.VirusView
+        android:id="@+id/virus_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:visibility="visible"/>
+
 
 
     <TextView
@@ -20,6 +22,29 @@
         android:text="@string/title"
         android:textColor="#e57070"
         android:textSize="32sp"/>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textColor="#e57070"
+        android:background="#80000000"
+        android:textSize="16sp"
+        android:id="@+id/zombification"/>
+
+        <LinearLayout
+            android:layout_width="match_parent" android:layout_gravity="bottom"
+            android:layout_height="wrap_content" android:orientation="horizontal"
+            android:background="#80000000">
+            <de.ludetis.android.medicus2.view.SingleVirusView
+                android:layout_width="100dp"
+                android:layout_height="100dp"
+                android:id="@+id/virus_detail"/>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="#e57070"
+                android:id="@+id/virus_info"/>
+        </LinearLayout>
 
 
 </FrameLayout>
