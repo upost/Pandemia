@@ -133,7 +133,30 @@ public class VirusView extends SurfaceView implements SurfaceHolder.Callback {
     private void drawVirus(Canvas canvas, int x, int y, Virus virus) {
         paintVirus1.setColor(virus.getColor1());
         paintVirus1.setStyle(Paint.Style.FILL_AND_STROKE);
-        canvas.drawCircle(x,y,scale(5),paintVirus1);
+        paintVirus2.setColor(virus.getColor2());
+        paintVirus2.setStrokeWidth(scale(0.25f));
+        paintVirus2.setStyle(Paint.Style.FILL_AND_STROKE);
+
+        canvas.drawCircle(x,y,scale(1),paintVirus2);
+        float deg=360/virus.getLimbs();
+        Random rnd = new Random(virus.getSeed());
+        int limbSegments = 3+rnd.nextInt(5);
+        for(int limb=0; limb<virus.getLimbs(); limb++) {
+            Random rnd2 = new Random(virus.getSeed()+1);
+            float sublimbScale=rnd2.nextFloat()/2+1;
+            canvas.rotate(deg,x,y);
+            for(int segment=0; segment<limbSegments; segment++) {
+                Random rnd3 = new Random(rnd2.nextInt(999));
+                canvas.drawLine(x, y, x + scale(1+1*segment), y, paintVirus1);
+                if(rnd2.nextBoolean())
+                    canvas.drawCircle(x + scale(1+1*segment), y, scale(0.5f), paintVirus1);
+                else {
+                    paintVirus2.setStrokeWidth(scale(0.2f+rnd3.nextFloat()/3f));
+                    canvas.drawLine(x + scale(1 + 1 * segment), y, x + scale(1 + 1*segment), y + scale(sublimbScale), paintVirus2);
+                    canvas.drawLine(x + scale(1 + 1 * segment), y, x + scale(1 + 1*segment), y - scale(sublimbScale), paintVirus2);
+                }
+            }
+        }
     }
 
     private float scale(float c) {
