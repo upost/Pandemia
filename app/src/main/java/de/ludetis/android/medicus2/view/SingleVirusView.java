@@ -82,7 +82,7 @@ public class SingleVirusView extends TextureView implements TextureView.SurfaceT
         }
     };
 
-    private void doDraw(Canvas canvas) {
+    private synchronized void doDraw(Canvas canvas) {
         if(virus!=null)
             VirusView.drawVirus(canvas, canvas.getWidth()/2, canvas.getHeight()/2, rot,virus,Math.min(canvas.getWidth(),canvas.getHeight())/15f,paintVirus1,paintVirus2);
     }
@@ -99,8 +99,8 @@ public class SingleVirusView extends TextureView implements TextureView.SurfaceT
     }
 
     @Override
-    public boolean onSurfaceTextureDestroyed(SurfaceTexture surfaceTexture) {
-        executorService.shutdown();
+    public synchronized boolean onSurfaceTextureDestroyed(SurfaceTexture surfaceTexture) {
+        executorService.shutdownNow();
         return true;
     }
 

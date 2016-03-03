@@ -146,7 +146,7 @@ public class VirusView extends TextureView implements TextureView.SurfaceTexture
         if(m.y<0) m.vy= -m.vy;
     }
 
-    private void doDraw(Canvas canvas) {
+    private synchronized void doDraw(Canvas canvas) {
 
         canvas.drawBitmap(bg.getBitmap(), bgRect, canvas.getClipBounds(), paintBitmap);
         int h=0;
@@ -207,8 +207,8 @@ public class VirusView extends TextureView implements TextureView.SurfaceTexture
     }
 
     @Override
-    public boolean onSurfaceTextureDestroyed(SurfaceTexture surfaceTexture) {
-        executorService.shutdown();
+    public synchronized boolean onSurfaceTextureDestroyed(SurfaceTexture surfaceTexture) {
+        executorService.shutdownNow();
         return true;
     }
 
