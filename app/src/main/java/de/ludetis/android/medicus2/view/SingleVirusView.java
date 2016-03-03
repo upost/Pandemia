@@ -3,10 +3,9 @@ package de.ludetis.android.medicus2.view;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Paint;
-import android.graphics.PixelFormat;
+import android.graphics.SurfaceTexture;
 import android.util.AttributeSet;
-import android.view.SurfaceHolder;
-import android.view.SurfaceView;
+import android.view.TextureView;
 
 import java.util.Random;
 import java.util.concurrent.Executors;
@@ -18,7 +17,7 @@ import de.ludetis.android.medicus2.model.Virus;
 /**
  * Created by uwe on 21.01.16.
  */
-public class SingleVirusView extends SurfaceView implements SurfaceHolder.Callback {
+public class SingleVirusView extends TextureView implements TextureView.SurfaceTextureListener{
 
     private static final long FRAME_INTERVAL = 30;
     private ScheduledExecutorService executorService;
@@ -49,27 +48,12 @@ public class SingleVirusView extends SurfaceView implements SurfaceHolder.Callba
         paintVirus1.setAntiAlias(true);
         paintVirus2 = new Paint();
         paintVirus2.setAntiAlias(true);
-        setZOrderOnTop(true);
-        getHolder().setFormat(PixelFormat.TRANSLUCENT);
-        getHolder().addCallback(this);
+        setOpaque(false);
+        setSurfaceTextureListener(this);
+        setFocusable(false);
+        setWillNotDraw(false);
     }
 
-
-    @Override
-    public void surfaceCreated(SurfaceHolder surfaceHolder) {
-        executorService = Executors.newSingleThreadScheduledExecutor();
-        executorService.scheduleAtFixedRate(renderer, FRAME_INTERVAL, FRAME_INTERVAL, TimeUnit.MILLISECONDS);
-    }
-
-    @Override
-    public void surfaceChanged(SurfaceHolder surfaceHolder, int i, int i1, int i2) {
-
-    }
-
-    @Override
-    public void surfaceDestroyed(SurfaceHolder surfaceHolder) {
-        executorService.shutdown();
-    }
 
     public Virus getVirus() {
         return virus;
@@ -86,15 +70,14 @@ public class SingleVirusView extends SurfaceView implements SurfaceHolder.Callba
         public void run() {
             Canvas canvas = null;
             try {
-                canvas = getHolder().lockCanvas();
-                synchronized (getHolder()) {
-                    rot+= rotv;
-                    // clear canvas
-                    canvas.drawColor(0, android.graphics.PorterDuff.Mode.CLEAR);
-                    doDraw(canvas);
-                }
+                canvas = lockCanvas();
+                rot+= rotv;
+                // clear canvas
+                canvas.drawColor(0, android.graphics.PorterDuff.Mode.CLEAR);
+                doDraw(canvas);
+
             } finally {
-                getHolder().unlockCanvasAndPost(canvas);
+                unlockCanvasAndPost(canvas);
             }
         }
     };
@@ -102,5 +85,27 @@ public class SingleVirusView extends SurfaceView implements SurfaceHolder.Callba
     private void doDraw(Canvas canvas) {
         if(virus!=null)
             VirusView.drawVirus(canvas, canvas.getWidth()/2, canvas.getHeight()/2, rot,virus,Math.min(canvas.getWidth(),canvas.getHeight())/15f,paintVirus1,paintVirus2);
+    }
+
+    @Override
+    public void onSurfaceTextureAvailable(SurfaceTexture surfaceTexture, int i, int i1) {
+        executorService = Executors.newSingleThreadScheduledExecutor();
+        executorService.scheduleAtFixedRate(renderer, FRAME_INTERVAL, FRAME_INTERVAL, TimeUnit.MILLISECONDS);
+    }
+
+    @Override
+    public void onSurfaceTextureSizeChanged(SurfaceTexture surfaceTexture, int i, int i1) {
+
+    }
+
+    @Override
+    public boolean onSurfaceTextureDestroyed(SurfaceTexture surfaceTexture) {
+        executorService.shutdown();
+        return true;
+    }
+
+    @Override
+    public void onSurfaceTextureUpdated(SurfaceTexture surfaceTexture) {
+
     }
 }
