@@ -1,4 +1,4 @@
-package de.ludetis.android.medicus2.view;
+package de.ludetis.android.pandemia.view;
 
 import android.content.Context;
 import android.graphics.Canvas;
@@ -12,7 +12,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-import de.ludetis.android.medicus2.model.Virus;
+import de.ludetis.android.pandemia.model.Virus;
 
 /**
  * Created by uwe on 21.01.16.

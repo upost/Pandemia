@@ -3,9 +3,9 @@
              android:layout_width="match_parent"
              android:layout_height="match_parent"
              android:background="#000000"
-             tools:context="de.ludetis.android.medicus2.MainActivity">
+             tools:context="de.ludetis.android.pandemia.MainActivity">
 
-    <de.ludetis.android.medicus2.view.VirusView
+    <de.ludetis.android.pandemia.view.VirusView
         android:id="@+id/virus_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -35,7 +35,7 @@
             android:layout_width="match_parent" android:layout_gravity="bottom"
             android:layout_height="wrap_content" android:orientation="horizontal"
             android:background="#80000000">
-            <de.ludetis.android.medicus2.view.SingleVirusView
+            <de.ludetis.android.pandemia.view.SingleVirusView
                 android:layout_width="100dp"
                 android:layout_height="100dp"
                 android:id="@+id/virus_detail"/>

@@ -1,4 +1,4 @@
-package de.ludetis.android.medicus2;
+package de.ludetis.android.pandemia;
 
 import android.graphics.Color;
 
@@ -8,7 +8,7 @@ import org.json.JSONObject;
 import java.util.Random;
 import java.util.UUID;
 
-import de.ludetis.android.medicus2.model.Virus;
+import de.ludetis.android.pandemia.model.Virus;
 
 /**
  * Created by uwe on 20.01.16.

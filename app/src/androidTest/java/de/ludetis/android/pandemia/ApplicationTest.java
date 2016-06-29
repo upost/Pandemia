@@ -1,4 +1,4 @@
-package de.ludetis.android.medicus2;
+package de.ludetis.android.pandemia;
 
 import android.app.Application;
 import android.test.ApplicationTestCase;

@@ -1,4 +1,4 @@
-package de.ludetis.android.medicus2.model;
+package de.ludetis.android.pandemia.model;
 
 /**
  * Created by uwe on 21.01.16.

@@ -1,4 +1,4 @@
-package de.ludetis.android.medicus2;
+package de.ludetis.android.pandemia;
 
 import android.content.ComponentName;
 import android.content.Intent;
@@ -13,10 +13,10 @@ import android.view.animation.AnimationUtils;
 import android.widget.TextView;
 
 import de.greenrobot.event.EventBus;
-import de.ludetis.android.medicus2.model.GameEvent;
-import de.ludetis.android.medicus2.model.Virus;
-import de.ludetis.android.medicus2.view.SingleVirusView;
-import de.ludetis.android.medicus2.view.VirusView;
+import de.ludetis.android.pandemia.model.GameEvent;
+import de.ludetis.android.pandemia.model.Virus;
+import de.ludetis.android.pandemia.view.SingleVirusView;
+import de.ludetis.android.pandemia.view.VirusView;
 import de.ludetis.android.tools.BaseGameActivity;
 import de.ludetis.android.tools.SimpleAnimationListener;
 

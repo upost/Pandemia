@@ -1,13 +1,13 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 22
-    buildToolsVersion "23.0.1"
+    compileSdkVersion 23
+    buildToolsVersion "23.0.2"
 
     defaultConfig {
-        applicationId "de.ludetis.android.medicus2"
+        applicationId "de.ludetis.android.pandemia"
         minSdkVersion 15
-        targetSdkVersion 22
+        targetSdkVersion 22 // do not change to 23 because new security scheme is not supported by the code yet
         versionCode 1
         versionName "1.0"
     }
@@ -29,12 +29,12 @@ repositories {
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
     testCompile 'junit:junit:4.12'
-    compile 'com.android.support:appcompat-v7:22.2.1'
-    compile 'com.android.support:support-v4:22.2.1'
+    compile 'com.android.support:appcompat-v7:23.2.1'
+    compile 'com.android.support:support-v4:23.2.1'
 
-    compile 'org.mapdb:mapdb:1.0.8'
+    compile 'org.mapdb:mapdb:1.0.9'
 
-    compile 'de.greenrobot:eventbus:2.4.0'
+    compile 'de.greenrobot:eventbus:2.4.1'
 
     compile ('org.eclipse.paho:org.eclipse.paho.android.service:1.0.2') {
         exclude module: 'support-v4'

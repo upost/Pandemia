@@ -1,4 +1,4 @@
-package de.ludetis.android.medicus2;
+package de.ludetis.android.pandemia;
 
 import android.content.Context;
 
@@ -10,7 +10,7 @@ import org.mapdb.DBMaker;
 import java.io.File;
 import java.util.NavigableSet;
 
-import de.ludetis.android.medicus2.model.Virus;
+import de.ludetis.android.pandemia.model.Virus;
 
 /**
  * Created by uwe on 20.01.16.

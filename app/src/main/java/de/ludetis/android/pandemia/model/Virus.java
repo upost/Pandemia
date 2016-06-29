@@ -1,4 +1,4 @@
-package de.ludetis.android.medicus2.model;
+package de.ludetis.android.pandemia.model;
 
 import org.json.JSONException;
 import org.json.JSONObject;
