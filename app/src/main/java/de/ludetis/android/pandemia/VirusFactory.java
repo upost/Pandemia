@@ -25,11 +25,11 @@ public class VirusFactory {
             // take some attributes from v and modify them slightly
             virus.init(createVirusName(), v.getLimbs()+rnd.nextInt(2), v.getColor1()-100+rnd.nextInt(200),
                     v.getColor2()-100+rnd.nextInt(200), rnd.nextInt(Integer.MAX_VALUE), v.getStrength()+rnd.nextInt(2),
-                    v.getMutability()+rnd.nextInt(2),v.getStamina()+rnd.nextInt(2));
+                    v.getMutability()+rnd.nextInt(2),v.getStamina()+rnd.nextInt(2), v.getGreed()+rnd.nextInt(2));
         } else {
             virus.init(createVirusName(),3+rnd.nextInt(6), Color.rgb(rnd.nextInt(128)+127,rnd.nextInt(128)+127,rnd.nextInt(128)+127),
                     Color.rgb(rnd.nextInt(128)+127,rnd.nextInt(128)+127,rnd.nextInt(128)+127),rnd.nextInt(Integer.MAX_VALUE),
-                    1+rnd.nextInt(2),1+rnd.nextInt(2),10+rnd.nextInt(10));
+                    1+rnd.nextInt(2),1+rnd.nextInt(2),10+rnd.nextInt(10),0);
 
         }
         return virus;
@@ -39,7 +39,8 @@ public class VirusFactory {
         try {
             Virus v = new Virus(o.getString("id"));
             v.init(o.optString("name",createVirusName()), o.getInt("limbs"), o.getInt("color1"), o.getInt("color2"), o.getInt("seed"),
-                    o.optInt("strength",1+rnd.nextInt(2)), o.optInt("mutability",1+rnd.nextInt(2)),o.optInt("stamina",10+rnd.nextInt(10)));
+                    o.optInt("strength",1+rnd.nextInt(2)), o.optInt("mutability",1+rnd.nextInt(2)),o.optInt("stamina",10+rnd.nextInt(10)),
+                    o.optInt("greed",0));
             return v;
         } catch (JSONException e) {
             return null;

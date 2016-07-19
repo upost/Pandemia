@@ -18,6 +18,7 @@ public class Virus implements Serializable {
     private int strength;
     private int mutability;
     private int stamina;
+    private int greed;
 
     public Virus(String id) {
         this.id = id;
@@ -39,6 +40,7 @@ public class Virus implements Serializable {
             o.put("strength",strength);
             o.put("mutability",mutability);
             o.put("stamina",stamina);
+            o.put("greed",greed);
         } catch (JSONException e) {
             //
         }
@@ -77,7 +79,11 @@ public class Virus implements Serializable {
         return name;
     }
 
-    public void init(String name,int limbs, int color1, int color2, int seed, int strength, int mutability, int stamina) {
+    public int getGreed() {
+        return greed;
+    }
+
+    public void init(String name, int limbs, int color1, int color2, int seed, int strength, int mutability, int stamina, int greed) {
         this.name=name;
         this.limbs=limbs<3?3:limbs;
         this.color1=color1;
@@ -86,5 +92,6 @@ public class Virus implements Serializable {
         this.strength = strength;
         this.mutability = mutability;
         this.stamina = stamina;
+        this.greed = greed;
     }
 }

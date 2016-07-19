@@ -121,7 +121,7 @@ public class MainActivity extends BaseGameActivity implements VirusView.OnVirusT
 
         String s="<b>"+v.getName()+"</b><br/>"
                 +getString(R.string.zombification)+" " + v.getStrength() +"<br/>"
-                +getString(R.string.mutability)+" " + v.getMutability() + "<br/>";
+                +getString(R.string.greed)+" " + v.getGreed() + "<br/>";
                 //+getString(R.string.stamina)+" "+v.getStamina()+"<br/>";
 
         virusInfo.setText(Html.fromHtml(s));
