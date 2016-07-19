@@ -3,6 +3,8 @@ package de.ludetis.android.pandemia;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.graphics.ColorMatrix;
+import android.graphics.ColorMatrixColorFilter;
 import android.location.Location;
 import android.os.Bundle;
 import android.os.Handler;
@@ -16,11 +18,14 @@ import android.widget.TextView;
 import android.widget.ViewFlipper;
 
 import org.osmdroid.api.IMapController;
+import org.osmdroid.tileprovider.MapTileProviderBasic;
+import org.osmdroid.tileprovider.tilesource.ITileSource;
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
 import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.MapView;
 import org.osmdroid.views.overlay.ItemizedIconOverlay;
 import org.osmdroid.views.overlay.OverlayItem;
+import org.osmdroid.views.overlay.TilesOverlay;
 import org.osmdroid.views.overlay.mylocation.MyLocationNewOverlay;
 
 import java.util.ArrayList;
@@ -100,12 +105,27 @@ public class MainActivity extends BaseGameActivity implements VirusView.OnVirusT
         findViewById(R.id.to_virus).setOnClickListener(this);
 
         mapView = (MapView) findViewById(R.id.map);
-        mapView.setTileSource(TileSourceFactory.MAPNIK);
+        //mapView.setTileSource(TileSourceFactory.MAPNIK);
         mapView.setBuiltInZoomControls(true);
         mapView.setMultiTouchControls(true);
         IMapController mapController = mapView.getController();
         mapController.setZoom(16);
 
+
+        final ITileSource tileSource = TileSourceFactory.DEFAULT_TILE_SOURCE;
+
+        TilesOverlay tilesOverlay = new TilesOverlay(new MapTileProviderBasic(this, tileSource), this);
+        // make redish
+        //tilesOverlay.setColorFilter(new PorterDuffColorFilter(0xffff8888, PorterDuff.Mode.MULTIPLY));
+        // inverse
+        tilesOverlay.setColorFilter(new ColorMatrixColorFilter(new ColorMatrix(new float[] {
+                -1,  0,  0,  0, 255,
+                0, -1,  0,  0, 255,
+                0,  0, -1,  0, 255,
+                0,  0,  0,  1,   0
+        })));
+
+        mapView.getOverlays().add(tilesOverlay);
 
         flipper = (ViewFlipper) findViewById(R.id.flipper);
 
@@ -119,6 +139,7 @@ public class MainActivity extends BaseGameActivity implements VirusView.OnVirusT
         startService(intent);
 
     }
+
 
     public ServiceConnection serverConnection = new ServiceConnection() {
 

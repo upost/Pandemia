@@ -24,13 +24,13 @@
         android:layout_gravity="center"
         android:keepScreenOn="true"
         android:text="@string/title"
-        android:textColor="#e57070"
+        android:textColor="@color/lightred"
         android:textSize="32sp"/>
 
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:textColor="#e57070"
+            android:textColor="@color/lightred"
             android:background="#80000000"
             android:textSize="16sp"
             android:id="@+id/zombification"/>
@@ -55,7 +55,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textColor="#e57070"
+                android:textColor="@color/lightred"
                 android:id="@+id/virus_info"/>
         </LinearLayout>
 
@@ -73,7 +73,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textColor="#e57070"
+            android:textColor="@color/lightred"
             android:layout_gravity="left"
             android:textSize="16sp"
             android:text="@string/to_virus"
