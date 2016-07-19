@@ -19,9 +19,11 @@ import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 import org.json.JSONArray;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.NavigableSet;
 import java.util.Random;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -29,6 +31,7 @@ import java.util.concurrent.TimeUnit;
 
 import de.greenrobot.event.EventBus;
 import de.ludetis.android.pandemia.model.GameEvent;
+import de.ludetis.android.pandemia.model.MapEvent;
 import de.ludetis.android.pandemia.model.Virus;
 
 public class GameService extends Service implements LocationListener, IMqttActionListener, MqttCallback {
@@ -39,6 +42,7 @@ public class GameService extends Service implements LocationListener, IMqttActio
     private static final long MIN_LOCATION_UPDATE_INTERVAL_MS = 1000 * 10;
     private static final float MIN_LOCATION_UPDATE_DISTANCE_M = 100;
     private static final int MAX_VIRUS=10;
+    private static final float BIOHAZARD_INFECTION_RADIUS = 1000; // meters
 
     private MqttAndroidClient mqttClient;
     private String clientId;
@@ -47,6 +51,8 @@ public class GameService extends Service implements LocationListener, IMqttActio
     private ScheduledExecutorService executorService = Executors.newSingleThreadScheduledExecutor();
     private VirusDatabase virusDatabase;
     private final Random rnd = new Random();
+    private Set<Location> bioHazards = new HashSet<>();
+    private long region=0;
 
     public GameService() {
     }
@@ -64,6 +70,8 @@ public class GameService extends Service implements LocationListener, IMqttActio
     @Override
     public void onCreate() {
         super.onCreate();
+
+        virusDatabase = new VirusDatabase(this);
 
         // MQTT
         clientId = UUID.randomUUID().toString();
@@ -87,8 +95,6 @@ public class GameService extends Service implements LocationListener, IMqttActio
         } catch (MqttException e) {
             Log.e(LOG_TAG, "could not connect to MQTT broker at " + BROKER_URI);
         }
-
-        virusDatabase = new VirusDatabase(this);
 
         executorService.scheduleWithFixedDelay(new Runnable() {
             @Override
@@ -133,8 +139,9 @@ public class GameService extends Service implements LocationListener, IMqttActio
             }
         }
         if(bestResult!=null) {
-            Log.d(LOG_TAG, "found best last location");
+            Log.d(LOG_TAG, "found best last location: " + bestResult);
             currentTopic = topic(bestResult);
+            onLocationChanged(bestResult);
         }
     }
 
@@ -230,6 +237,39 @@ public class GameService extends Service implements LocationListener, IMqttActio
             currentTopic=topic;
             subscribeToCurrentTopic();
         }
+
+        int thisRegion = calcRegionCode(location);
+        if(thisRegion!=region) {
+            region=thisRegion;
+            createBiohazards(location);
+            EventBus.getDefault().post(new MapEvent(MapEvent.Type.REGION_UPDATED,region,bioHazards));
+        }
+
+        for(Location b : bioHazards) {
+            if(b.distanceTo(location) < BIOHAZARD_INFECTION_RADIUS) {
+                Virus v = VirusFactory.fromBiohazard(region);
+                addVirus(v);
+            }
+        }
+    }
+
+    private void createBiohazards(Location location) {
+        bioHazards.clear();
+        Random rnd = new Random(region);
+        int count = 500+rnd.nextInt(1000);
+        for(int i=0; i<count; i++) {
+            double lo =  Math.floor(location.getLongitude())+rnd.nextDouble();
+            double la =  Math.floor(location.getLatitude())+rnd.nextDouble();
+            Location l = new Location("");
+            l.setLongitude(lo);
+            l.setLatitude(la);
+            bioHazards.add(l);
+            //Log.d(LOG_TAG, "biohazard at " + l);
+        }
+    }
+
+    private int calcRegionCode(Location location) {
+        return (int) ( Math.round(location.getLongitude())*399 +  Math.round(location.getLatitude()) );
     }
 
     private void subscribeToCurrentTopic() {
@@ -290,11 +330,16 @@ public class GameService extends Service implements LocationListener, IMqttActio
             JSONArray a = new JSONArray(msg);
             for(int i=0; i<a.length(); i++) {
                 Virus v = VirusFactory.fromJSON(a.getJSONObject(i));
-                if(v!=null && virusDatabase.findVirus(v.getId())==null) {
-                    Log.d(LOG_TAG, "infected with virus: " + v.getId());
-                    virusDatabase.addVirus(v);
-                }
+                addVirus(v);
             }
+        }
+    }
+
+    private void addVirus(Virus v) {
+        if(v!=null && virusDatabase.findVirus(v.getId())==null) {
+            Log.d(LOG_TAG, "infected with virus: " + v.getId());
+            virusDatabase.addVirus(v);
+            EventBus.getDefault().post(new GameEvent(GameEvent.Type.NEW_VIRUS,v.getId(),1));
         }
     }
 

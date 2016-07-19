@@ -40,4 +40,6 @@ dependencies {
         exclude module: 'support-v4'
     }
 
+    compile 'org.osmdroid:osmdroid-android:5.2'
+
 }

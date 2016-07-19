@@ -35,6 +35,15 @@ public class VirusFactory {
         return virus;
     }
 
+    public static Virus fromBiohazard(long seed) {
+        Virus virus = new Virus("biohazard_"+Long.toString(seed));
+        Random rnd = new Random(seed);
+        virus.init(createVirusName(),3+rnd.nextInt(6), Color.rgb(rnd.nextInt(128)+127,rnd.nextInt(128)+127,rnd.nextInt(128)+127),
+                Color.rgb(rnd.nextInt(128)+127,rnd.nextInt(128)+127,rnd.nextInt(128)+127),rnd.nextInt(Integer.MAX_VALUE),
+                1+rnd.nextInt(2),1+rnd.nextInt(2),10+rnd.nextInt(10),0);
+        return virus;
+    }
+
     public static Virus fromJSON(JSONObject o) {
         try {
             Virus v = new Virus(o.getString("id"));

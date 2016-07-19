@@ -22,9 +22,9 @@ public class VirusDatabase {
 
     public VirusDatabase(Context context) {
         if(db==null)
-            db = DBMaker.newFileDB(new File(context.getDir("db",0),"virustest.db")).make();
+            db = DBMaker.newFileDB(new File(context.getDir("db",0),"virus.db")).make();
         if(map==null)
-            map = db.getTreeMap("v2");
+            map = db.getTreeMap("v3");
     }
 
     public void  close() {

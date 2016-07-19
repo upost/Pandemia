@@ -7,5 +7,7 @@
     <string name="stamina">stamina</string>
     <string name="zombification">zombification</string>
     <string name="total_zombification">total zombification</string>
+    <string name="to_map">MAP&gt;&gt;&gt;</string>
+    <string name="to_virus"><![CDATA[<<VIRUS]]></string>
 </resources>
 
