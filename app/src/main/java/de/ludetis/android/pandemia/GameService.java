@@ -264,7 +264,7 @@ public class GameService extends Service implements LocationListener, IMqttActio
             l.setLongitude(lo);
             l.setLatitude(la);
             bioHazards.add(l);
-            Log.d(LOG_TAG, "created biohazard at " + l);
+            //Log.d(LOG_TAG, "created biohazard at " + l);
         }
         Log.d(LOG_TAG, "created "+bioHazards.size()+" biohazards");
     }
