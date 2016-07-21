@@ -239,7 +239,7 @@ public class GameService extends Service implements LocationListener, IMqttActio
         }
 
         int thisRegion = calcRegionCode(location);
-        if(thisRegion!=region) {
+        if(thisRegion!=region || bioHazards.isEmpty()) {
             region=thisRegion;
             createBiohazards(location);
             EventBus.getDefault().post(new MapEvent(MapEvent.Type.REGION_UPDATED,region,bioHazards));
@@ -256,20 +256,21 @@ public class GameService extends Service implements LocationListener, IMqttActio
     private void createBiohazards(Location location) {
         bioHazards.clear();
         Random rnd = new Random(region);
-        int count = 500+rnd.nextInt(1000);
+        int count = 50+rnd.nextInt(100);
         for(int i=0; i<count; i++) {
-            double lo =  Math.floor(location.getLongitude())+rnd.nextDouble();
-            double la =  Math.floor(location.getLatitude())+rnd.nextDouble();
+            double lo =  Math.floor(location.getLongitude()*GRID_SIZE_FACTOR)/GRID_SIZE_FACTOR+rnd.nextDouble()/GRID_SIZE_FACTOR;
+            double la =  Math.floor(location.getLatitude()*GRID_SIZE_FACTOR)/GRID_SIZE_FACTOR+rnd.nextDouble()/GRID_SIZE_FACTOR;
             Location l = new Location("");
             l.setLongitude(lo);
             l.setLatitude(la);
             bioHazards.add(l);
-            //Log.d(LOG_TAG, "biohazard at " + l);
+            Log.d(LOG_TAG, "created biohazard at " + l);
         }
+        Log.d(LOG_TAG, "created "+bioHazards.size()+" biohazards");
     }
 
     private int calcRegionCode(Location location) {
-        return (int) ( Math.round(location.getLongitude())*399 +  Math.round(location.getLatitude()) );
+        return (int) ( Math.round(location.getLongitude()*GRID_SIZE_FACTOR)*399*GRID_SIZE_FACTOR +  Math.round(location.getLatitude()*GRID_SIZE_FACTOR) );
     }
 
     private void subscribeToCurrentTopic() {

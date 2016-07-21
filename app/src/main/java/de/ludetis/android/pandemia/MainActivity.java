@@ -132,6 +132,7 @@ public class MainActivity extends BaseGameActivity implements VirusView.OnVirusT
         biohazardOverlay = new ItemizedIconOverlay<>(items,getResources().getDrawable(R.mipmap.biohazard),this,this);
         mapView.getOverlays().add(biohazardOverlay);
         myLocationOverlay = new MyLocationNewOverlay(mapView);
+
         mapView.getOverlays().add(myLocationOverlay);
 
         Intent intent = new Intent(this, GameService.class);
@@ -191,6 +192,7 @@ public class MainActivity extends BaseGameActivity implements VirusView.OnVirusT
         for(Location l : biohazards) {
             biohazardOverlay.addItem(new OverlayItem("Biohazard","", new GeoPoint(l.getLatitude(), l.getLongitude())));
         }
+        mapView.invalidate();
     }
 
     @Override
