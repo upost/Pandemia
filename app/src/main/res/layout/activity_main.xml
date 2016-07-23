@@ -41,7 +41,7 @@
     <LinearLayout
         android:layout_width="match_parent" android:layout_gravity="bottom"
         android:layout_height="wrap_content" android:orientation="horizontal"
-        android:background="#80000000">
+        android:background="#80000000" android:id="@+id/details" android:visibility="invisible">
         <de.ludetis.android.pandemia.view.SingleVirusView
             android:layout_width="100dp"
             android:layout_height="100dp"

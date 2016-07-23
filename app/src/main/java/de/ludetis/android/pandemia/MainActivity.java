@@ -209,6 +209,7 @@ public class MainActivity extends BaseGameActivity implements VirusView.OnVirusT
         Log.d(LOG_TAG, "tapped virus " + virusId);
         Virus v = virusDatabase.findVirus(virusId);
         singleVirusView.setVirus(v);
+        showView(R.id.details);
 
         String s="<b>"+v.getName()+"</b><br/>"
                 +getString(R.string.zombification)+" " + v.getStrength() +"<br/>"
