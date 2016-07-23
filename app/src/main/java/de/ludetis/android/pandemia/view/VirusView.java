@@ -141,7 +141,7 @@ public class VirusView extends TextureView implements TextureView.SurfaceTexture
     private void moveVirus(int width,int height, String id, Movement m) {
         m.move(scale(0.05f));
         if(m.x>width) m.vx= -m.vx;
-        if(m.y>width) m.vy= -m.vy;
+        if(m.y>height) m.vy= -m.vy;
         if(m.x<0) m.vx= -m.vx;
         if(m.y<0) m.vy= -m.vy;
     }

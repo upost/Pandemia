@@ -1,21 +1,30 @@
-<ViewFlipper xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
              xmlns:tools="http://schemas.android.com/tools"
              android:layout_width="match_parent"
              android:layout_height="match_parent"
              android:background="#000000"
-             android:animateLayoutChanges="true"
-             android:id="@+id/flipper"
              tools:context="de.ludetis.android.pandemia.MainActivity">
 
-    <FrameLayout
+    <LinearLayout
         android:layout_width="match_parent"
+        android:orientation="vertical"
         android:layout_height="match_parent">
+
+
+        <org.osmdroid.views.MapView
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:id="@+id/map"
+            />
 
     <de.ludetis.android.pandemia.view.VirusView
         android:id="@+id/virus_view"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:visibility="visible"/>
+        android:layout_height="0dp"
+        android:layout_weight="1"/>
+    </LinearLayout>
+
 
     <TextView
         android:id="@+id/title"
@@ -27,58 +36,32 @@
         android:textColor="@color/lightred"
         android:textSize="32sp"/>
 
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:textColor="@color/lightred"
-            android:background="#80000000"
-            android:textSize="16sp"
-            android:id="@+id/zombification"/>
 
+
+    <LinearLayout
+        android:layout_width="match_parent" android:layout_gravity="bottom"
+        android:layout_height="wrap_content" android:orientation="horizontal"
+        android:background="#80000000">
+        <de.ludetis.android.pandemia.view.SingleVirusView
+            android:layout_width="100dp"
+            android:layout_height="100dp"
+            android:id="@+id/virus_detail"/>
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textColor="#e57070"
-            android:layout_gravity="right"
-            android:textSize="16sp"
-            android:text="@string/to_map"
-            android:id="@+id/to_map"/>
+            android:textColor="@color/lightred"
+            android:id="@+id/virus_info"/>
+    </LinearLayout>
 
-        <LinearLayout
-            android:layout_width="match_parent" android:layout_gravity="bottom"
-            android:layout_height="wrap_content" android:orientation="horizontal"
-            android:background="#80000000">
-            <de.ludetis.android.pandemia.view.SingleVirusView
-                android:layout_width="100dp"
-                android:layout_height="100dp"
-                android:id="@+id/virus_detail"/>
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textColor="@color/lightred"
-                android:id="@+id/virus_info"/>
-        </LinearLayout>
 
-    </FrameLayout>
-
-    <FrameLayout
+    <TextView
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
-
-        <org.osmdroid.views.MapView
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:id="@+id/map"
-            />
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textColor="@color/lightred"
-            android:layout_gravity="left"
-            android:textSize="16sp"
-            android:text="@string/to_virus"
-            android:id="@+id/to_virus"/>
+        android:layout_height="wrap_content"
+        android:textColor="@color/lightred"
+        android:background="#80000000"
+        android:textSize="16sp"
+        android:layout_gravity="bottom"
+        android:id="@+id/zombification"/>
 
 
-    </FrameLayout>
-</ViewFlipper>
+</FrameLayout>

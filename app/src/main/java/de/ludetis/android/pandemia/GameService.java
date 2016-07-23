@@ -73,6 +73,13 @@ public class GameService extends Service implements LocationListener, IMqttActio
 
         virusDatabase = new VirusDatabase(this);
 
+        if(virusDatabase.getViruses().isEmpty()) {
+            Virus v = VirusFactory.createMutation(null);
+            Log.d(LOG_TAG, "new virus: " + v.getId());
+            virusDatabase.addVirus(v);
+            EventBus.getDefault().post(new GameEvent(GameEvent.Type.NEW_VIRUS, v.getId(), 0));
+        }
+
         // MQTT
         clientId = UUID.randomUUID().toString();
         mqttClient = new MqttAndroidClient(this, BROKER_URI, clientId);
@@ -170,23 +177,18 @@ public class GameService extends Service implements LocationListener, IMqttActio
 
     private void mutation() {
         NavigableSet<String> viruses = virusDatabase.getViruses();
-        if(viruses.isEmpty()) {
-            Virus v = VirusFactory.createMutation(null);
-            Log.d(LOG_TAG, "new virus: " + v.getId());
-            virusDatabase.addVirus(v);
-            EventBus.getDefault().post(new GameEvent(GameEvent.Type.NEW_VIRUS, v.getId(), 0));
-        } else {
-            // mutation
-            for(String id : virusDatabase.getViruses()) {
-                Virus virus = virusDatabase.findVirus(id);
-                int mutationPropability = calcMutationPropability(virus);
-                if(rnd.nextInt(10000)<mutationPropability) {
-                    Virus v = VirusFactory.createMutation(virus);
-                    Log.d(LOG_TAG, "mutation of virus "+id+": new virus: " + v.getId());
-                    virusDatabase.addVirus(v);
-                    EventBus.getDefault().post(new GameEvent(GameEvent.Type.NEW_VIRUS,v.getId(),0));
-                }
+
+        // mutation
+        for(String id : virusDatabase.getViruses()) {
+            Virus virus = virusDatabase.findVirus(id);
+            int mutationPropability = calcMutationPropability(virus);
+            if(rnd.nextInt(10000)<mutationPropability) {
+                Virus v = VirusFactory.createMutation(virus);
+                Log.d(LOG_TAG, "mutation of virus "+id+": new virus: " + v.getId());
+                virusDatabase.addVirus(v);
+                EventBus.getDefault().post(new GameEvent(GameEvent.Type.NEW_VIRUS,v.getId(),0));
             }
+        }
 //            if(virusDatabase.getViruses().size()>MAX_VIRUS) {
 //                // look for virus with minimal stamina and kill it
 //                String minimalStaminaVirusId=null;
@@ -203,7 +205,7 @@ public class GameService extends Service implements LocationListener, IMqttActio
 //                    EventBus.getDefault().post(new GameEvent(GameEvent.Type.KILLED_VIRUS, minimalStaminaVirusId, 0));
 //                }
 //            }
-        }
+
 
     }
 
@@ -240,6 +242,7 @@ public class GameService extends Service implements LocationListener, IMqttActio
 
         int thisRegion = calcRegionCode(location);
         if(thisRegion!=region || bioHazards.isEmpty()) {
+            Log.d(LOG_TAG, "new region or no biohazards " + thisRegion);
             region=thisRegion;
             createBiohazards(location);
             EventBus.getDefault().post(new MapEvent(MapEvent.Type.REGION_UPDATED,region,bioHazards));

@@ -1,4 +1,5 @@
 <resources>
     <string name="app_name">Pandemia</string>
     <string name="title">PANDEMIE</string>
+    <string name="infected_with">infiziert mit</string>
 </resources>

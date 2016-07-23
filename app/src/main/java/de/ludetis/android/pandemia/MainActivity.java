@@ -11,11 +11,12 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.text.Html;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.TextView;
-import android.widget.ViewFlipper;
+import android.widget.Toast;
 
 import org.osmdroid.api.IMapController;
 import org.osmdroid.tileprovider.MapTileProviderBasic;
@@ -57,7 +58,6 @@ public class MainActivity extends BaseGameActivity implements VirusView.OnVirusT
     private MyLocationNewOverlay myLocationOverlay;
     private ItemizedIconOverlay<OverlayItem> biohazardOverlay;
     private List<OverlayItem> items = new ArrayList<OverlayItem>();
-    private ViewFlipper flipper;
     private MapView mapView;
 
     @Override
@@ -98,18 +98,13 @@ public class MainActivity extends BaseGameActivity implements VirusView.OnVirusT
         zombification = (TextView) findViewById(R.id.zombification);
         setTypeface(zombification, FONT_NAME);
 
-        setTypeface((TextView) findViewById(R.id.to_map),FONT_NAME);
-        findViewById(R.id.to_map).setOnClickListener(this);
-
-        setTypeface((TextView) findViewById(R.id.to_virus),FONT_NAME);
-        findViewById(R.id.to_virus).setOnClickListener(this);
-
         mapView = (MapView) findViewById(R.id.map);
         //mapView.setTileSource(TileSourceFactory.MAPNIK);
         mapView.setBuiltInZoomControls(true);
         mapView.setMultiTouchControls(true);
         IMapController mapController = mapView.getController();
         mapController.setZoom(16);
+        mapView.setMinZoomLevel(16);
 
 
         final ITileSource tileSource = TileSourceFactory.DEFAULT_TILE_SOURCE;
@@ -127,13 +122,13 @@ public class MainActivity extends BaseGameActivity implements VirusView.OnVirusT
 
         mapView.getOverlays().add(tilesOverlay);
 
-        flipper = (ViewFlipper) findViewById(R.id.flipper);
-
         biohazardOverlay = new ItemizedIconOverlay<>(items,getResources().getDrawable(R.mipmap.biohazard),this,this);
         mapView.getOverlays().add(biohazardOverlay);
         myLocationOverlay = new MyLocationNewOverlay(mapView);
 
         mapView.getOverlays().add(myLocationOverlay);
+
+        EventBus.getDefault().register(this);
 
         Intent intent = new Intent(this, GameService.class);
         bindService(intent, serverConnection, BIND_AUTO_CREATE);
@@ -159,12 +154,13 @@ public class MainActivity extends BaseGameActivity implements VirusView.OnVirusT
         super.onResume();
         myLocationOverlay.enableMyLocation();
         myLocationOverlay.enableFollowLocation();
-        EventBus.getDefault().register(this);
+
         updateUI();
     }
 
     @Override
     protected void onDestroy() {
+        EventBus.getDefault().unregister(this);
         //virusDatabase.close();
         super.onDestroy();
     }
@@ -172,16 +168,29 @@ public class MainActivity extends BaseGameActivity implements VirusView.OnVirusT
     @Override
     protected void onPause() {
         myLocationOverlay.disableMyLocation();
-        EventBus.getDefault().unregister(this);
+
         super.onPause();
     }
 
     public void onEventMainThread(GameEvent gameEvent) {
         updateUI();
+        if(gameEvent.getType().equals(GameEvent.Type.NEW_VIRUS)) {
+            Virus v = virusDatabase.findVirus(gameEvent.getId());
+            TextView tv = new TextView(this);
+            tv.setText(getString(R.string.infected_with) + " " + v.getName());
+            setTypeface(tv,FONT_NAME);
+            tv.setTextColor(getResources().getColor(R.color.lightred));
+            Toast toast = new Toast(this);
+            toast.setView(tv);
+            toast.setGravity(Gravity.CENTER,0,0);
+            toast.setDuration(Toast.LENGTH_SHORT);
+            toast.show();
+        }
     }
 
     public void onEventMainThread(MapEvent mapEvent) {
         if(mapEvent.getType().equals(MapEvent.Type.REGION_UPDATED)) {
+            Log.d(LOG_TAG," updating biohazard overlay");
             updateBiohazardOverlay(mapEvent.getBiohazards());
         }
         mapView.invalidate();
@@ -211,7 +220,7 @@ public class MainActivity extends BaseGameActivity implements VirusView.OnVirusT
     }
 
     public void updateUI() {
-        zombification.setText(Html.fromHtml(getString(R.string.zombification)) + " " + calcTotalZombification());
+        zombification.setText(Html.fromHtml(getString(R.string.total_zombification)) + " " + calcTotalZombification());
     }
 
     private int calcTotalZombification() {
@@ -224,16 +233,7 @@ public class MainActivity extends BaseGameActivity implements VirusView.OnVirusT
 
     @Override
     public void onClick(View view) {
-        if(view.getId()==R.id.to_map) {
-            flipper.setOutAnimation(this,R.anim.view_transition_out_left);
-            flipper.setInAnimation(this,R.anim.view_transition_in_right);
-            ((ViewFlipper)findViewById(R.id.flipper)).setDisplayedChild(1);
-        }
-        if(view.getId()==R.id.to_virus) {
-            flipper.setOutAnimation(this,R.anim.view_transition_out_right);
-            flipper.setInAnimation(this,R.anim.view_transition_in_left);
-            ((ViewFlipper)findViewById(R.id.flipper)).setDisplayedChild(0);
-        }
+
     }
 
     @Override
