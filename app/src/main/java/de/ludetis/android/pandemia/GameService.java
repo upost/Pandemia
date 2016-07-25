@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
+import android.os.Binder;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.util.Log;
@@ -57,9 +58,15 @@ public class GameService extends Service implements LocationListener, IMqttActio
     public GameService() {
     }
 
+    public class GameServiceBinder extends Binder {
+        public GameService getService() {
+            return GameService.this;
+        }
+    }
+
     @Override
     public IBinder onBind(Intent intent) {
-        return  null;
+        return new GameServiceBinder();
     }
 
     @Override
@@ -350,5 +357,9 @@ public class GameService extends Service implements LocationListener, IMqttActio
     @Override
     public void deliveryComplete(IMqttDeliveryToken token) {
 
+    }
+
+    public Set<Location> getBioHazards() {
+        return bioHazards;
     }
 }
