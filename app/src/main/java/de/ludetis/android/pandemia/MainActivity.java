@@ -12,8 +12,6 @@ import android.text.Html;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
-import android.view.animation.Animation;
-import android.view.animation.AnimationUtils;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -40,7 +38,6 @@ import de.ludetis.android.pandemia.model.Virus;
 import de.ludetis.android.pandemia.view.SingleVirusView;
 import de.ludetis.android.pandemia.view.VirusView;
 import de.ludetis.android.tools.BaseGameActivity;
-import de.ludetis.android.tools.SimpleAnimationListener;
 
 
 public class MainActivity extends BaseGameActivity implements VirusView.OnVirusTappedListener, View.OnClickListener, ItemizedIconOverlay.OnItemGestureListener<BiohazardOverlayItem> {
@@ -67,23 +64,6 @@ public class MainActivity extends BaseGameActivity implements VirusView.OnVirusT
         addTypeface("pirulen");
 
         setContentView(R.layout.activity_main);
-
-        setTypeface((TextView) findViewById(R.id.title), FONT_NAME);
-        findViewById(R.id.title).startAnimation(AnimationUtils.loadAnimation(this, R.anim.fadein));
-        // fade out and hide title after 5 seconds
-        handler.postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                Animation a = AnimationUtils.loadAnimation(MainActivity.this,R.anim.fadeout);
-                a.setAnimationListener(new SimpleAnimationListener() {
-                    @Override
-                    public void onAnimationEnd(Animation animation) {
-                        hideView(R.id.title);
-                    }
-                });
-                findViewById(R.id.title).startAnimation(a);
-            }
-        },5000);
 
         gameDatabase = new GameDatabase(this);
 
