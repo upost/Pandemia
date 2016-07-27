@@ -18,8 +18,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
+import de.ludetis.android.pandemia.GameDatabase;
 import de.ludetis.android.pandemia.R;
-import de.ludetis.android.pandemia.VirusDatabase;
 import de.ludetis.android.pandemia.model.Movement;
 import de.ludetis.android.pandemia.model.Virus;
 
@@ -36,7 +36,7 @@ public class VirusView extends TextureView implements TextureView.SurfaceTexture
 
     private static final long FRAME_INTERVAL = 30;
     private ScheduledExecutorService executorService;
-    private VirusDatabase virusDatabase;
+    private GameDatabase gameDatabase;
     private BitmapDrawable bg;
     private Rect bgRect;
     private Paint paintBitmap,paintVirus1,paintVirus2;
@@ -128,7 +128,7 @@ public class VirusView extends TextureView implements TextureView.SurfaceTexture
     };
 
     private void movement(int width,int height) {
-        for(String id: virusDatabase.getViruses()) {
+        for(String id: gameDatabase.getViruses()) {
             Movement m = virusMovement.get(id);
             if(m==null) {
                 m=new Movement(rnd.nextInt(width), rnd.nextInt(height), rnd.nextInt(360), rnd.nextFloat()*2-1, rnd.nextFloat()*2-1, rnd.nextFloat()*2-1);
@@ -150,9 +150,9 @@ public class VirusView extends TextureView implements TextureView.SurfaceTexture
 
         canvas.drawBitmap(bg.getBitmap(), bgRect, canvas.getClipBounds(), paintBitmap);
         int h=0;
-        for(String id: virusDatabase.getViruses()) {
+        for(String id: gameDatabase.getViruses()) {
             Movement m = virusMovement.get(id);
-            drawVirus(canvas, m.x, m.y, m.rot, virusDatabase.findVirus(id), scale(1),  paintVirus1, paintVirus2);
+            drawVirus(canvas, m.x, m.y, m.rot, gameDatabase.findVirus(id), scale(1),  paintVirus1, paintVirus2);
             h+=120;
         }
     }
@@ -196,7 +196,7 @@ public class VirusView extends TextureView implements TextureView.SurfaceTexture
 
     @Override
     public void onSurfaceTextureAvailable(SurfaceTexture surfaceTexture, int i, int i1) {
-        virusDatabase = new VirusDatabase(context);
+        gameDatabase = new GameDatabase(context);
         executorService = Executors.newSingleThreadScheduledExecutor();
         executorService.scheduleAtFixedRate(renderer, FRAME_INTERVAL, FRAME_INTERVAL, TimeUnit.MILLISECONDS);
     }

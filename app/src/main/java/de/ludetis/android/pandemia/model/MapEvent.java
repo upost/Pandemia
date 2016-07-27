@@ -1,7 +1,5 @@
 package de.ludetis.android.pandemia.model;
 
-import android.location.Location;
-
 import java.util.Set;
 
 /**
@@ -16,9 +14,9 @@ public class MapEvent {
     public enum Type { REGION_UPDATED,}
     private Type type;
     private long regioncode;
-    private Set<Location> biohazards;
+    private Set<Biohazard> biohazards;
 
-    public MapEvent(Type type, long regioncode, Set<Location> biohazards) {
+    public MapEvent(Type type, long regioncode, Set<Biohazard> biohazards) {
         this.type = type;
         this.regioncode = regioncode;
         this.biohazards = biohazards;
@@ -28,7 +26,7 @@ public class MapEvent {
         return regioncode;
     }
 
-    public Set<Location> getBiohazards() {
+    public Set<Biohazard> getBiohazards() {
         return biohazards;
     }
 }

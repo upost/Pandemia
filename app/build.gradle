@@ -8,8 +8,8 @@ android {
         applicationId "de.ludetis.android.pandemia"
         minSdkVersion 15
         targetSdkVersion 22 // do not change to 23 because new security scheme is not supported by the code yet
-        versionCode 1
-        versionName "1.0"
+        versionCode 11
+        versionName "1.1"
     }
     buildTypes {
         release {

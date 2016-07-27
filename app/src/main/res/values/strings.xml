@@ -8,5 +8,7 @@
     <string name="zombification">zombification</string>
     <string name="total_zombification">total zombification</string>
     <string name="infected_with">infected with</string>
+    <string name="biohazard">Biohazard</string>
+    <string name="visited">visited</string>
 </resources>
 

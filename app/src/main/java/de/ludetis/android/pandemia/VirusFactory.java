@@ -35,8 +35,8 @@ public class VirusFactory {
         return virus;
     }
 
-    public static Virus fromBiohazard(long seed) {
-        Virus virus = new Virus("biohazard_"+Long.toString(seed));
+    public static Virus fromBiohazard(long seed, String id) {
+        Virus virus = new Virus("biohazard_"+id);
         Random rnd = new Random(seed);
         virus.init(createVirusName(),3+rnd.nextInt(6), Color.rgb(rnd.nextInt(128)+127,rnd.nextInt(128)+127,rnd.nextInt(128)+127),
                 Color.rgb(rnd.nextInt(128)+127,rnd.nextInt(128)+127,rnd.nextInt(128)+127),rnd.nextInt(Integer.MAX_VALUE),
