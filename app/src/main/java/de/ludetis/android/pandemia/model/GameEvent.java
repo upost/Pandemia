@@ -5,7 +5,7 @@ package de.ludetis.android.pandemia.model;
  */
 public class GameEvent {
 
-    public enum Type { NEW_VIRUS, REGION_UPDATED, KILLED_VIRUS };
+    public enum Type { NEW_VIRUS, REGION_UPDATED, INIT, KILLED_VIRUS };
     private Type type;
     private String id;
     private int value;

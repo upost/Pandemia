@@ -140,7 +140,9 @@ public class GameService extends Service implements LocationListener, IMqttActio
     }
 
     public void onEvent(GameEvent gameEvent) {
-
+        if(gameEvent.getType().equals(GameEvent.Type.INIT)) {
+            sendInfectionMessage(true);
+        }
     }
 
     private void findBestLastLocation() {
@@ -345,7 +347,7 @@ public class GameService extends Service implements LocationListener, IMqttActio
 
     @Override
     public void onStatusChanged(String s, int i, Bundle bundle) {
-        Log.v(LOG_TAG, "location status: " + s);
+        //Log.v(LOG_TAG, "location status: " + s);
     }
 
     @Override

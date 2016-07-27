@@ -122,6 +122,7 @@ public class MainActivity extends BaseGameActivity implements VirusView.OnVirusT
         public void onServiceConnected(ComponentName className, IBinder binder) {
             gameService = ((GameService.GameServiceBinder)binder).getService();
             updateBiohazardOverlay(gameService.getBioHazards());
+            EventBus.getDefault().post(new GameEvent(GameEvent.Type.INIT,"",0));
         }
 
         public void onServiceDisconnected(ComponentName className) {
