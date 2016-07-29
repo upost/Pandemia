@@ -26,13 +26,9 @@ import org.json.JSONObject;
 
 import java.util.HashSet;
 import java.util.List;
-import java.util.NavigableSet;
 import java.util.Random;
 import java.util.Set;
 import java.util.UUID;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 
 import de.greenrobot.event.EventBus;
 import de.ludetis.android.pandemia.model.Biohazard;
@@ -45,7 +41,7 @@ public class GameService extends Service implements LocationListener, IMqttActio
     private static final double GRID_SIZE_FACTOR = 10; // grid size = 1/GRID_SIZE_FACTOR °
     private static final String LOG_TAG = "GameService";
     private static final long HEARTBEAT_INTERVAL_SECONDS = 30;
-    private static final long MIN_LOCATION_UPDATE_INTERVAL_MS = 1000 * 10;
+    private static final long MIN_LOCATION_UPDATE_INTERVAL_MS = 1000 * 30;
     private static final float MIN_LOCATION_UPDATE_DISTANCE_M = 100;
     private static final int MAX_VIRUS=10;
     private static final float BIOHAZARD_INFECTION_RADIUS = 250; // meters
@@ -54,7 +50,6 @@ public class GameService extends Service implements LocationListener, IMqttActio
     private String clientId;
     private LocationManager locationManager;
     private String currentTopic,lastSubscribedTopic;
-    private ScheduledExecutorService executorService = Executors.newSingleThreadScheduledExecutor();
     private GameDatabase gameDatabase;
     private final Random rnd = new Random();
     private Set<Biohazard> bioHazards = new HashSet<>();
@@ -110,9 +105,9 @@ public class GameService extends Service implements LocationListener, IMqttActio
         // Location
         locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
         if(locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER))
-            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,MIN_LOCATION_UPDATE_INTERVAL_MS,MIN_LOCATION_UPDATE_DISTANCE_M,this);
+            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, MIN_LOCATION_UPDATE_INTERVAL_MS, MIN_LOCATION_UPDATE_DISTANCE_M, this);
         else
-            locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER,MIN_LOCATION_UPDATE_INTERVAL_MS,MIN_LOCATION_UPDATE_DISTANCE_M,this);
+            locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, MIN_LOCATION_UPDATE_INTERVAL_MS, MIN_LOCATION_UPDATE_DISTANCE_M, this);
 
         findBestLastLocation();
 
@@ -125,16 +120,7 @@ public class GameService extends Service implements LocationListener, IMqttActio
             Log.e(LOG_TAG, "could not connect to MQTT broker at " + BROKER_URI);
         }
 
-        executorService.scheduleWithFixedDelay(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    heartbeat();
-                } catch(Exception e) {
-                    Log.e(LOG_TAG, "Exception during heartbeat",e);
-                }
-            }
-        }, HEARTBEAT_INTERVAL_SECONDS, HEARTBEAT_INTERVAL_SECONDS, TimeUnit.SECONDS);
+
 
         EventBus.getDefault().register(this);
     }
@@ -175,87 +161,38 @@ public class GameService extends Service implements LocationListener, IMqttActio
         }
     }
 
-    private void heartbeat() {
-        try {
 
-            mutation();
 
-            if (currentTopic != null) {
-                subscribeToCurrentTopic();
+    private boolean sendInfectionMessage(boolean entering) {
+        if(mqttClient!=null && mqttClient.isConnected()) {
+            try {
+                JSONArray a = gameDatabase.findAllVirusDataAsJson();
+                JSONObject o = new JSONObject();
+                if(entering) o.put("entering",currentTopic);
+                o.put("sender",clientId);
+                o.put("viruses", a);
+                String payload = o.toString();
+                Log.d(LOG_TAG, "publishing to " + currentTopic + ": " + payload);
+                IMqttDeliveryToken token = mqttClient.publish(currentTopic, new MqttMessage(payload.getBytes()));
+                token.setActionCallback(new IMqttActionListener() {
+                    @Override
+                    public void onSuccess(IMqttToken asyncActionToken) {
+                        sendEnterMessage=false;
+                    }
 
-                if(sendEnterMessage) {
-                    sendInfectionMessage(true);
-                }
+                    @Override
+                    public void onFailure(IMqttToken asyncActionToken, Throwable exception) {
 
-            } else {
-                Log.d(LOG_TAG, "waiting for location...");
-            }
-
-        }catch (Exception e) {
-            Log.e(LOG_TAG, "Exception during heartbeat ",e);
-        }
-    }
-
-    private void sendInfectionMessage(boolean entering) {
-        try {
-            JSONArray a = gameDatabase.findAllVirusDataAsJson();
-            JSONObject o = new JSONObject();
-            if(entering) o.put("entering",currentTopic);
-            o.put("sender",clientId);
-            o.put("viruses", a);
-            String payload = o.toString();
-            Log.d(LOG_TAG, "publishing to " + currentTopic + ": " + payload);
-            IMqttDeliveryToken token = mqttClient.publish(currentTopic, new MqttMessage(payload.getBytes()));
-            token.setActionCallback(new IMqttActionListener() {
-                @Override
-                public void onSuccess(IMqttToken asyncActionToken) {
-                    sendEnterMessage=false;
-                }
-
-                @Override
-                public void onFailure(IMqttToken asyncActionToken, Throwable exception) {
-
-                }
-            });
-        } catch (MqttException e) {
-            //
-        } catch (JSONException e) {
-            Log.e(LOG_TAG, "JSONException",e);
-        }
-    }
-
-    private void mutation() {
-        NavigableSet<String> viruses = gameDatabase.getViruses();
-
-        // mutation
-        for(String id : gameDatabase.getViruses()) {
-            Virus virus = gameDatabase.findVirus(id);
-            int mutationPropability = calcMutationPropability(virus);
-            if(rnd.nextInt(10000)<mutationPropability) {
-                Virus v = VirusFactory.createMutation(virus);
-                Log.d(LOG_TAG, "mutation of virus "+id+": new virus: " + v.getId());
-                gameDatabase.addVirus(v);
-                EventBus.getDefault().post(new GameEvent(GameEvent.Type.NEW_VIRUS,v.getId(),0));
+                    }
+                });
+                return true;
+            } catch (MqttException e) {
+                //
+            } catch (JSONException e) {
+                Log.e(LOG_TAG, "JSONException",e);
             }
         }
-//            if(virusDatabase.getViruses().size()>MAX_VIRUS) {
-//                // look for virus with minimal stamina and kill it
-//                String minimalStaminaVirusId=null;
-//                for(String id : virusDatabase.getViruses()) {
-//                    Virus virus = virusDatabase.findVirus(id);
-//                    if(minimalStaminaVirusId==null ||
-//                            virus.getStamina()<virusDatabase.findVirus(minimalStaminaVirusId).getStamina()) {
-//                        minimalStaminaVirusId=id;
-//                    }
-//                }
-//                if(minimalStaminaVirusId!=null) {
-//                    virusDatabase.removeVirus(minimalStaminaVirusId);
-//                    Log.d(LOG_TAG, "killed virus with low stamina: " + minimalStaminaVirusId);
-//                    EventBus.getDefault().post(new GameEvent(GameEvent.Type.KILLED_VIRUS, minimalStaminaVirusId, 0));
-//                }
-//            }
-
-
+        return false;
     }
 
     private int calcMutationPropability(Virus virus) {
@@ -264,9 +201,6 @@ public class GameService extends Service implements LocationListener, IMqttActio
 
     @Override
     public void onDestroy() {
-        //virusDatabase.close();
-
-        executorService.shutdown();
 
         locationManager.removeUpdates(this);
 
@@ -285,9 +219,10 @@ public class GameService extends Service implements LocationListener, IMqttActio
         String topic = topic(location);
         if(!topic.equals(currentTopic)) {
             Log.d(LOG_TAG, "new grid location: " + topic);
-            currentTopic=topic;
-            subscribeToCurrentTopic();
-            sendEnterMessage=true;
+            if(sendInfectionMessage(true)) {
+                currentTopic = topic;
+                subscribeToCurrentTopic();
+            }
         }
 
         int thisRegion = calcRegionCode(location);
