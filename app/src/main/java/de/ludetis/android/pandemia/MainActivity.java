@@ -183,7 +183,7 @@ public class MainActivity extends BaseGameActivity implements VirusView.OnVirusT
         for(Biohazard b : biohazards) {
             biohazardOverlay.addItem(new BiohazardOverlayItem(b.getId(), gameDatabase,
                     new GeoPoint(b.getLocation().getLatitude(), b.getLocation().getLongitude()),
-                    getResources().getDrawable(R.mipmap.biohazard), getResources().getDrawable(R.mipmap.biohazard_grey)));
+                    getResources().getDrawable(R.mipmap.biohazard), getResources().getDrawable(R.mipmap.biohazard)));
         }
         mapView.invalidate();
     }
