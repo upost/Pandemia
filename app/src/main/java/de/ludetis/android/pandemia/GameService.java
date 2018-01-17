@@ -37,7 +37,7 @@ import de.ludetis.android.pandemia.model.MapEvent;
 import de.ludetis.android.pandemia.model.Virus;
 
 public class GameService extends Service implements LocationListener, IMqttActionListener, MqttCallback {
-    private static final String BROKER_URI = "tcp://h10.ludetis-spiele.de";
+    private static final String BROKER_URI = "tcp://mqtt2.ludetis-spiele.de";
     private static final double GRID_SIZE_FACTOR = 10; // grid size = 1/GRID_SIZE_FACTOR °
     private static final String LOG_TAG = "GameService";
     private static final long HEARTBEAT_INTERVAL_SECONDS = 30;
