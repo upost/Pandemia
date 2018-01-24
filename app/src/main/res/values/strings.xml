@@ -10,5 +10,7 @@
     <string name="infected_with">infected with</string>
     <string name="biohazard">Biohazard</string>
     <string name="visited">visited</string>
+    <string name="cannot_run">Sorry, this app cannot run properly without the needed permissions.</string>
+    <string name="thanks_for_granting">thanks for granting neccessary permissions</string>
 </resources>
 

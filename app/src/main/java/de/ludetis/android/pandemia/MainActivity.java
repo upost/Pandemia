@@ -1,13 +1,17 @@
 package de.ludetis.android.pandemia;
 
+import android.Manifest;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.content.pm.PackageManager;
 import android.graphics.ColorMatrix;
 import android.graphics.ColorMatrixColorFilter;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.text.Html;
 import android.util.Log;
 import android.view.Gravity;
@@ -44,6 +48,8 @@ public class MainActivity extends BaseGameActivity implements VirusView.OnVirusT
 
     private static final String LOG_TAG = "MainActivity";
     public static final String FONT_NAME = "pirulen";
+    private static final int MY_PERMISSIONS_REQUEST = 8937;
+    public static final String[] PERMISSIONS = {Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.WRITE_EXTERNAL_STORAGE};
     private GameService gameService;
     private GameDatabase gameDatabase;
     private VirusView virusView;
@@ -65,7 +71,7 @@ public class MainActivity extends BaseGameActivity implements VirusView.OnVirusT
 
         setContentView(R.layout.activity_main);
 
-        gameDatabase = new GameDatabase(this);
+
 
         virusView = (VirusView)findViewById(R.id.virus_view);
         virusView.setListener(this);
@@ -86,6 +92,51 @@ public class MainActivity extends BaseGameActivity implements VirusView.OnVirusT
         mapController.setZoom(16);
         mapView.setMinZoomLevel(16);
 
+
+
+
+        int permissionCheck1 = ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION);
+        int permissionCheck2 = ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE);
+        if(permissionCheck1== PackageManager.PERMISSION_DENIED || permissionCheck2==PackageManager.PERMISSION_DENIED) {
+            ActivityCompat.requestPermissions(this,    PERMISSIONS, MY_PERMISSIONS_REQUEST);
+        } else {
+            initPermissionDependent();
+        }
+    }
+
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode,
+                                           String permissions[], int[] grantResults) {
+        switch (requestCode) {
+            case MY_PERMISSIONS_REQUEST: {
+                int granted = 0;
+                for(int i=0; i<grantResults.length; i++) {
+                    if(grantResults[i]==PackageManager.PERMISSION_GRANTED) granted++;
+                }
+                if(granted==PERMISSIONS.length) {
+
+                    Toast.makeText(MainActivity.this,R.string.thanks_for_granting,Toast.LENGTH_LONG).show();
+
+
+                    initPermissionDependent();
+
+                } else {
+
+                    // permission denied, boo! Disable the
+                    // functionality that depends on this permission.
+                    Toast.makeText(MainActivity.this,R.string.cannot_run,Toast.LENGTH_LONG).show();
+                }
+
+            }
+
+        }
+    }
+
+
+    private void initPermissionDependent() {
+
+        gameDatabase = new GameDatabase(this);
 
         final ITileSource tileSource = TileSourceFactory.DEFAULT_TILE_SOURCE;
 
@@ -108,14 +159,17 @@ public class MainActivity extends BaseGameActivity implements VirusView.OnVirusT
 
         mapView.getOverlays().add(myLocationOverlay);
 
+        myLocationOverlay.enableMyLocation();
+        myLocationOverlay.enableFollowLocation();
+
         EventBus.getDefault().register(this);
 
         Intent intent = new Intent(this, GameService.class);
         bindService(intent, serverConnection, BIND_AUTO_CREATE);
         startService(intent);
 
+        updateUI();
     }
-
 
     public ServiceConnection serverConnection = new ServiceConnection() {
 
@@ -134,9 +188,10 @@ public class MainActivity extends BaseGameActivity implements VirusView.OnVirusT
     @Override
     protected void onResume() {
         super.onResume();
-        myLocationOverlay.enableMyLocation();
-        myLocationOverlay.enableFollowLocation();
-
+        if(myLocationOverlay!=null) {
+            myLocationOverlay.enableMyLocation();
+            myLocationOverlay.enableFollowLocation();
+        }
         updateUI();
     }
 
@@ -149,7 +204,9 @@ public class MainActivity extends BaseGameActivity implements VirusView.OnVirusT
 
     @Override
     protected void onPause() {
-        myLocationOverlay.disableMyLocation();
+        if(myLocationOverlay!=null) {
+            myLocationOverlay.disableMyLocation();
+        }
 
         super.onPause();
     }
@@ -211,8 +268,10 @@ public class MainActivity extends BaseGameActivity implements VirusView.OnVirusT
 
     private int calcTotalZombification() {
         int res=0;
-        for(String id : gameDatabase.getViruses()) {
-            res += gameDatabase.findVirus(id).getStrength();
+        if(gameDatabase!=null) {
+            for (String id : gameDatabase.getViruses()) {
+                res += gameDatabase.findVirus(id).getStrength();
+            }
         }
         return res;
     }

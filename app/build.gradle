@@ -7,9 +7,9 @@ android {
     defaultConfig {
         applicationId "de.ludetis.android.pandemia"
         minSdkVersion 15
-        targetSdkVersion 22 // do not change to 23 because new security scheme is not supported by the code yet
-        versionCode 111
-        versionName "1.1.1"
+        targetSdkVersion 27
+        versionCode 112
+        versionName "1.1.2"
     }
     buildTypes {
         release {
@@ -32,6 +32,7 @@ dependencies {
     compile 'com.android.support:appcompat-v7:27.0.2'
     compile 'com.android.support:support-v4:27.0.2'
 
+    //noinspection GradleDependency
     compile 'org.mapdb:mapdb:1.0.9' // newer versions do not support Android. Migrate to Nitrite if you don't like the old mapdb.
 
     compile 'de.greenrobot:eventbus:2.4.1'

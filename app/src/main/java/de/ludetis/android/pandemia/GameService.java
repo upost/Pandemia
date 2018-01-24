@@ -1,5 +1,6 @@
 package de.ludetis.android.pandemia;
 
+import android.annotation.SuppressLint;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
@@ -37,21 +38,20 @@ import de.ludetis.android.pandemia.model.MapEvent;
 import de.ludetis.android.pandemia.model.Virus;
 
 public class GameService extends Service implements LocationListener, IMqttActionListener, MqttCallback {
-    private static final String BROKER_URI = "tcp://mqtt2.ludetis-spiele.de";
+    private static final String BROKER_URI = "tcp://mqtt2.ludetis-spiele.de:80";
     private static final double GRID_SIZE_FACTOR = 10; // grid size = 1/GRID_SIZE_FACTOR °
     private static final String LOG_TAG = "GameService";
     private static final long HEARTBEAT_INTERVAL_SECONDS = 30;
     private static final long MIN_LOCATION_UPDATE_INTERVAL_MS = 1000 * 30;
     private static final float MIN_LOCATION_UPDATE_DISTANCE_M = 100;
     private static final int MAX_VIRUS=10;
-    private static final float BIOHAZARD_INFECTION_RADIUS = 250; // meters
+    private static final float BIOHAZARD_INFECTION_RADIUS = 100; // meters
 
     private MqttAndroidClient mqttClient;
     private String clientId;
     private LocationManager locationManager;
     private String currentTopic,lastSubscribedTopic;
     private GameDatabase gameDatabase;
-    private final Random rnd = new Random();
     private Set<Biohazard> bioHazards = new HashSet<>();
     private long region=0;
     private Vibrator vibrator;
@@ -76,6 +76,7 @@ public class GameService extends Service implements LocationListener, IMqttActio
         return super.onStartCommand(intent, flags, startId);
     }
 
+    @SuppressLint("MissingPermission") // we expect the check been done in the mainActivity and the service started THEREAFTER.
     @Override
     public void onCreate() {
         super.onCreate();
@@ -138,7 +139,7 @@ public class GameService extends Service implements LocationListener, IMqttActio
         long bestTime=0;
         List<String> matchingProviders = locationManager.getAllProviders();
         for (String provider: matchingProviders) {
-            Location location = locationManager.getLastKnownLocation(provider);
+            @SuppressLint("MissingPermission") Location location = locationManager.getLastKnownLocation(provider);
             if (location != null) {
                 float accuracy = location.getAccuracy();
                 long time = location.getTime();
